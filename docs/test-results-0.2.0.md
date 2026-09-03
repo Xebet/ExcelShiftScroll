@@ -17,12 +17,16 @@
 - The native integration-test process exited cleanly and did not retain a workbook or Excel process.
 - Both x64 and x86 packages passed required-entry, architecture, XLL checksum, and outer ZIP checksum verification.
 
-## Release checksums
+## Published release checksums
 
-- `9ef1cfbf76d547daf64dc08f808eacf83cc35c10fae59290c71009527d746ca3  ExcelShiftScroll-v0.2.0-x64.zip`
-- `d8366a81b632a43a84428f3c3314dc2ca4e84c5ef0bcc71564869ee9860da743  ExcelShiftScroll-v0.2.0-x86.zip`
-- `e9c0d497d9fc1eeb07bb722630b784f576a816703082cd77d52b468c5e287e50  ExcelShiftScroll64.xll`
-- `9bdf6b11c4f4cd857006cdcb83796534fa120a4ca73bf9abec641856a6c60265  ExcelShiftScroll32.xll`
+The assets were downloaded again from GitHub after the tag workflow completed. Their hashes match the `SHA256SUMS.txt` uploaded by that workflow:
+
+- `7ca7daa393d248e3de3851abc88f556ec4a25602fb630b20b18f33680b7edec4  ExcelShiftScroll-v0.2.0-x64.zip`
+- `c06b864962debe91d2000f01a888d120e13afcf05e2576b5feab5053272571f1  ExcelShiftScroll-v0.2.0-x86.zip`
+- `67b30c722ce81a4d7e1e461012053948e5b95e7c22c34c58af7e60e34e38453b  ExcelShiftScroll64.xll`
+- `c10f4a0c33c40d3fe363de1553d74de85f4b0c40bf787c486bee4899c5ec12df  ExcelShiftScroll32.xll`
+
+ZIP bytes are not reproducible between the local and CI packaging environments because archive metadata differs, so only the published workflow checksum file is authoritative for downloaded assets.
 
 ## Still requiring hands-on judgment
 
