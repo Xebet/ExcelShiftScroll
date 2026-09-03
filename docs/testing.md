@@ -23,9 +23,9 @@ The suite covers:
 - repeated hook initialization/release and failed installation;
 - queued-scroll coalescing, shutdown dropping, and rejection after disposal.
 
-CI also verifies a warning-free Release build, both packed XLL architectures, ZIP contents, and SHA-256 generation.
+CI also verifies a warning-free Release build, both packed XLL architectures, installer/uninstaller and instruction inclusion, ZIP contents, and SHA-256 generation.
 
-The local 0.1.0 evidence snapshot is recorded in [test-results-0.1.0.md](test-results-0.1.0.md).
+Evidence snapshots: [0.1.0](test-results-0.1.0.md) and [0.1.1 trust-installation fix](test-results-0.1.1.md).
 
 ## Development window probe
 

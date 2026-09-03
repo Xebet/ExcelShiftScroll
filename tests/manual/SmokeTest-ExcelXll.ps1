@@ -4,7 +4,7 @@ param(
     [string]$XllPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$ExpectedVersion = '0.1.0'
+    [string]$ExpectedVersion = '0.1.1'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -63,7 +63,7 @@ finally {
     }
 }
 
-if ($null -ne $excelProcess -and -not $excelProcess.WaitForExit(10000)) {
+if ($null -ne $excelProcess -and -not $excelProcess.WaitForExit(30000)) {
     throw "Excel process $($excelProcess.Id) remained after Quit."
 }
 

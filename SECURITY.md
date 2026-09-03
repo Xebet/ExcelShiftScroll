@@ -24,4 +24,4 @@ Optional local diagnostics are disabled by default. When enabled, JSON-lines rec
 
 ## Signing
 
-Official 0.1.0 artifacts are not Authenticode-signed unless a release explicitly says otherwise. The project does not bypass SmartScreen or Office security warnings. Verify `SHA256SUMS.txt` and obtain releases only from this repository.
+Release artifacts are not Authenticode-signed unless a release explicitly says otherwise. The current-user installer removes Mark-of-the-Web only from the exact copied XLL after the user chooses to run it; it does not disable `BlockXLLFromInternet`, edit Trust Center, or establish a broad trusted location. Verify `SHA256SUMS.txt` and obtain releases only from this repository.

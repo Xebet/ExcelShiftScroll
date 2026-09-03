@@ -33,13 +33,15 @@ To check Excel bitness: open **File → Account → About Excel**. The first lin
 
 ## Install
 
-1. Exit every Excel process.
-2. Extract the downloaded ZIP to a stable local folder such as `%LocalAppData%\ExcelShiftScroll`.
-3. Right-click the `.xll`, choose **Properties**, select **Unblock** if that option appears, and choose **OK**. Files carrying the Mark-of-the-Web may otherwise be blocked by Office.
+1. Exit every Excel process. Do not load the XLL from inside a ZIP or `%TEMP%`.
+2. Right-click the downloaded ZIP, choose **Properties**, select **Unblock** if shown, and then extract it.
+3. In the extracted folder, right-click `Install-CurrentUser.ps1` and choose **Run with PowerShell**. It copies and unblocks only the included XLL under `%LocalAppData%\ExcelShiftScroll\AddIn`; it does not change the registry, Trust Center, or Excel's add-in list.
 4. Start Excel and open **File → Options → Add-ins**.
-5. At the bottom, select **Excel Add-ins**, choose **Go**, then **Browse**.
-6. Select `ExcelShiftScroll64.xll` for 64-bit Excel or `ExcelShiftScroll32.xll` for 32-bit Excel.
+5. At the bottom, select **Excel Add-ins**, choose **Go**, then **Browse**. This is not the Office Store **My Add-ins** page.
+6. Select `ExcelShiftScroll64.xll` for 64-bit Excel or `ExcelShiftScroll32.xll` for 32-bit Excel from the stable installed folder.
 7. Place the pointer over the worksheet grid, hold Shift, and turn the vertical wheel.
+
+Manual alternative: extract to a stable local folder, right-click the XLL itself, choose **Properties → General → Unblock → OK**, and browse to that exact file. See the packaged `INSTALL.txt`. [Microsoft documents that current Excel blocks XLL files from untrusted locations by default](https://support.microsoft.com/en-US/Excel/excel-is-blocking-untrusted-xll-add-ins-by-default).
 
 No administrator rights or separate .NET runtime installation is required. The release is currently unsigned, so Windows SmartScreen or Office may show a publisher warning. Do not disable security features; use the repository Release page, unblock only the file you verified, and compare its SHA-256.
 
@@ -65,7 +67,8 @@ Settings are per-user at `%LocalAppData%\ExcelShiftScroll\settings.json`; they a
 ## Troubleshooting
 
 - **“Not a valid add-in”** usually means XLL bitness does not match Excel. Recheck **About Excel**.
-- **Excel blocked the file**: exit Excel, use the file's **Properties → Unblock**, then retry. Do not weaken Trust Center globally.
+- **Excel says the source is untrusted**: an XLL loaded from a browser-download or temporary folder probably carries Mark-of-the-Web. Exit Excel, run the packaged current-user installer or use **Properties → Unblock** on the stable local XLL, then browse to it again. Do not disable `BlockXLLFromInternet` or weaken Trust Center globally.
+- **A stale `%TEMP%` entry remains**: try checking the missing entry once; if Excel offers to delete it from the list, choose **Yes**, then browse to the stable installed copy.
 - **Ribbon group missing**: check **File → Options → Add-ins → Disabled Items**. Ribbon callback failures can cause Office to disable a COM helper.
 - **No horizontal scroll**: ensure the pointer is over the worksheet grid, only Shift is pressed, the add-in is enabled, and the sheet has horizontally scrollable columns.
 - **No action over formula bar/Ribbon/dialog/task pane** is intentional.
@@ -82,7 +85,7 @@ Requirements: Windows, .NET 8 SDK (used as the build SDK), and PowerShell. The a
 dotnet restore ExcelShiftScroll.sln --configfile NuGet.Config
 dotnet build ExcelShiftScroll.sln --configuration Release --no-restore
 dotnet test ExcelShiftScroll.sln --configuration Release --no-build --no-restore
-./build/Package-Release.ps1 -Version 0.1.0
+./build/Package-Release.ps1 -Version 0.1.1
 ```
 
 Packed XLLs are produced under `src/ExcelShiftScroll/bin/Release/net48/publish`. Release ZIPs and hashes are produced under `artifacts/release`. CI repeats these steps on a Windows runner and publishes tag builds matching `v*`.

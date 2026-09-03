@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory = $false)]
     [ValidatePattern('^\d+\.\d+\.\d+([-.][0-9A-Za-z.-]+)?$')]
-    [string]$Version = '0.1.0'
+    [string]$Version = '0.1.1'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,8 +53,11 @@ foreach ($package in $packages) {
     Copy-Item -LiteralPath $source -Destination $destination
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'README.md') -Destination $stageDirectory
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'README.zh-CN.md') -Destination $stageDirectory
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'INSTALL.txt') -Destination $stageDirectory
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination $stageDirectory
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'THIRD_PARTY_NOTICES.md') -Destination $stageDirectory
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'install\Install-CurrentUser.ps1') -Destination $stageDirectory
+    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'install\Uninstall-CurrentUser.ps1') -Destination $stageDirectory
 
     $xllHash = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
     "$xllHash *$($package.Destination)" | Set-Content -LiteralPath (Join-Path $stageDirectory 'SHA256SUMS.txt') -Encoding ascii

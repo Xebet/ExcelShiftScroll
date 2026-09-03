@@ -2,6 +2,14 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. This project uses semantic versioning.
 
+## [0.1.1] - 2026-09-03
+
+### Fixed
+
+- Added a current-user installer that copies the architecture-matched XLL from a release ZIP to `%LocalAppData%\ExcelShiftScroll\AddIn` and removes Mark-of-the-Web from that exact copied file.
+- Added a matching binary-only uninstaller and bilingual `INSTALL.txt` with recovery steps for stale temporary-directory add-in entries.
+- Strengthened installation documentation for Microsoft 365's default blocking of untrusted XLL files without disabling Office security controls.
+
 ## [0.1.0] - 2026-09-03
 
 ### Added

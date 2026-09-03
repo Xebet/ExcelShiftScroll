@@ -30,13 +30,15 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 
 ## 安装
 
-1. 退出所有 Excel 进程。
-2. 把 ZIP 解压到稳定的本地目录，例如 `%LocalAppData%\ExcelShiftScroll`。
-3. 右键 `.xll` → **属性**；如果看到 **解除锁定/Unblock**，勾选后确定。带“来自 Internet”标记的文件可能被 Office 阻止。
+1. 退出所有 Excel 进程。不要从 ZIP 内部或 `%TEMP%` 临时目录加载 XLL。
+2. 右键下载的 ZIP → **属性**；如有 **解除锁定/Unblock**，勾选后确定，然后再解压。
+3. 在解压目录中右键 `Install-CurrentUser.ps1`，选择 **使用 PowerShell 运行**。它只会把包含的 XLL 复制到 `%LocalAppData%\ExcelShiftScroll\AddIn` 并解除这一份文件的 Internet 标记；不会修改注册表、信任中心或 Excel 加载项列表。
 4. 启动 Excel，打开 **文件 → 选项 → 加载项**。
-5. 底部选择 **Excel 加载项**，点击 **转到**，再点击 **浏览**。
-6. 64 位 Excel 选择 `ExcelShiftScroll64.xll`；32 位 Excel 选择 `ExcelShiftScroll32.xll`。
+5. 底部选择 **Excel 加载项**，点击 **转到**，再点击 **浏览**。不要进入 Office 商店的“我的加载项”页面。
+6. 从稳定安装目录选择 `ExcelShiftScroll64.xll`（64 位）或 `ExcelShiftScroll32.xll`（32 位）。
 7. 把鼠标放在工作表网格，按住 Shift 并转动纵向滚轮。
+
+手动方法：解压到稳定本地目录，右键 XLL → **属性 → 常规 → 解除锁定 → 确定**，然后在 Excel 中浏览这份文件。发布包内的 `INSTALL.txt` 有完整步骤。[Microsoft 官方说明当前 Excel 默认阻止来自不受信任位置的 XLL](https://support.microsoft.com/en-US/Excel/excel-is-blocking-untrusted-xll-add-ins-by-default)。
 
 无需管理员权限，也无需另装 .NET 运行库。0.1.0 发布文件未做 Authenticode 代码签名，Windows SmartScreen 或 Office 可能提示未知发布者。不要关闭系统安全功能；只从本仓库 Release 获取文件，校验 SHA-256 后仅解除该文件的锁定。
 
@@ -62,7 +64,8 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 ## 常见问题
 
 - **“不是有效的加载项”**：通常是 XLL 位数与 Excel 不匹配。
-- **文件被阻止**：关闭 Excel，在 XLL **属性** 中解除锁定后重试；不要全局降低信任中心安全级别。
+- **显示“来源不受信任”**：浏览器下载或临时目录中的 XLL 通常带 Mark-of-the-Web。关闭 Excel，运行发布包内的当前用户安装脚本，或对稳定目录中的 XLL 执行 **属性 → 解除锁定**，再重新浏览加载。不要关闭 `BlockXLLFromInternet` 或降低信任中心安全级别。
+- **列表仍有 `%TEMP%` 旧条目**：先尝试勾选这个已失效条目；Excel 若询问是否从列表删除，请选择“是”，然后浏览稳定目录中的新文件。
 - **找不到功能区按钮**：检查 **文件 → 选项 → 加载项 → 禁用项目**。
 - **没有横向滚动**：确认鼠标在工作表网格、只按下 Shift、加载项已启用，且工作表可以横向滚动。
 - **公式栏/功能区/对话框/任务窗格不触发**：这是安全边界的预期行为。
@@ -77,7 +80,7 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 dotnet restore ExcelShiftScroll.sln --configfile NuGet.Config
 dotnet build ExcelShiftScroll.sln --configuration Release --no-restore
 dotnet test ExcelShiftScroll.sln --configuration Release --no-build --no-restore
-./build/Package-Release.ps1 -Version 0.1.0
+./build/Package-Release.ps1 -Version 0.1.1
 ```
 
 打包后的 XLL 位于 `src/ExcelShiftScroll/bin/Release/net48/publish`，发布 ZIP 和校验值位于 `artifacts/release`。详细设计和验证方式见 [架构](docs/architecture.md)、[测试](docs/testing.md) 和 [ADR](docs/adr/)。

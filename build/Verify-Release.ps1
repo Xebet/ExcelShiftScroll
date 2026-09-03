@@ -29,7 +29,17 @@ foreach ($line in $globalLines) {
 
     $architecture = if ($zipName -match '-x64\.zip$') { 'x64' } elseif ($zipName -match '-x86\.zip$') { 'x86' } else { throw "Unknown package architecture: $zipName" }
     $expectedXll = if ($architecture -eq 'x64') { 'ExcelShiftScroll64.xll' } else { 'ExcelShiftScroll32.xll' }
-    $requiredEntries = @($expectedXll, 'README.md', 'README.zh-CN.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'SHA256SUMS.txt')
+    $requiredEntries = @(
+        $expectedXll,
+        'README.md',
+        'README.zh-CN.md',
+        'INSTALL.txt',
+        'Install-CurrentUser.ps1',
+        'Uninstall-CurrentUser.ps1',
+        'LICENSE',
+        'THIRD_PARTY_NOTICES.md',
+        'SHA256SUMS.txt'
+    )
 
     $archive = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
     try {

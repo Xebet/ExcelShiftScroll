@@ -1,0 +1,51 @@
+ExcelShiftScroll installation / 安装说明
+========================================
+
+IMPORTANT / 重要：
+Microsoft 365 blocks XLL add-ins carrying Mark-of-the-Web or loaded from an
+untrusted/temporary location. Do not run the XLL from inside a ZIP or a Temp
+folder. Do not disable BlockXLLFromInternet or lower Trust Center security.
+
+Microsoft 365 默认阻止带“来自 Internet”标记或位于不受信任/临时目录的
+XLL。不要直接从 ZIP 内部或 Temp 临时目录运行 XLL，也不要关闭
+BlockXLLFromInternet 或降低信任中心安全设置。
+
+Recommended installation / 推荐安装：
+
+1. Close every Excel window. / 关闭所有 Excel 窗口。
+2. Right-click this downloaded ZIP, choose Properties, select Unblock if it is
+   shown, then extract the ZIP. / 右键下载的 ZIP，选择“属性”，如有“解除锁定”
+   则勾选，然后再解压。
+3. In the extracted folder, right-click Install-CurrentUser.ps1 and choose
+   Run with PowerShell. It copies only the included XLL to:
+   %LocalAppData%\ExcelShiftScroll\AddIn
+   and removes Mark-of-the-Web from that copied XLL. It does not change the
+   registry, Trust Center, or Excel add-in registration.
+   / 在解压目录中右键 Install-CurrentUser.ps1，选择“使用 PowerShell 运行”。
+   它只会复制并解除这一份 XLL，不修改注册表或信任中心。
+4. Open Excel > File > Options > Add-ins. At Manage select Excel Add-ins,
+   choose Go > Browse, and select the installed XLL above.
+   / 打开 Excel > 文件 > 选项 > 加载项，在“管理”中选择“Excel 加载项”，
+   点击“转到”>“浏览”，选择上述稳定目录内的 XLL。
+
+Manual alternative / 手动方法：
+
+- Extract to a stable local folder.
+- Right-click the XLL > Properties > General > Unblock > OK.
+- Browse to that exact XLL from Excel Add-ins.
+
+- 解压到稳定的本地目录。
+- 右键 XLL > 属性 > 常规 > 解除锁定 > 确定。
+- 从 Excel 加载项管理器浏览并选择这一份 XLL。
+
+Stale Temp entry / 清理旧的临时目录条目：
+
+If Excel still lists ExcelShiftScroll64 from ...\AppData\Local\Temp\..., try
+checking that missing entry once. Excel may ask whether to delete it from the
+list; choose Yes. Then use Browse to select the stable installed XLL. Never use
+the Office Store/My Add-ins page for an XLL; use Manage: Excel Add-ins > Go.
+
+如果列表仍显示来自 ...\AppData\Local\Temp\... 的 ExcelShiftScroll64，可先勾选
+一次失效条目；Excel 若询问是否从列表删除，请选择“是”。随后通过“浏览”选择
+稳定目录里的 XLL。XLL 不在 Office 商店“我的加载项”页面管理，而是在
+“管理：Excel 加载项 > 转到”中管理。
