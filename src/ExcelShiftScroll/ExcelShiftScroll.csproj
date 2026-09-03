@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>ExcelShiftScroll</AssemblyName>
+    <RootNamespace>ExcelShiftScroll</RootNamespace>
+    <Version>0.1.0</Version>
+    <Authors>Xebet and contributors</Authors>
+    <Description>Shift + mouse wheel horizontal scrolling for desktop Excel.</Description>
+    <Copyright>Copyright (c) 2026 Xebet and contributors</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <ComVisible>false</ComVisible>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ExcelAddInName>ExcelShiftScroll</ExcelAddInName>
+    <ExcelAddInExplicitExports>false</ExcelAddInExplicitExports>
+    <ExcelAddInPack>true</ExcelAddInPack>
+    <ExcelAddInCreate32BitAddIn>true</ExcelAddInCreate32BitAddIn>
+    <ExcelAddInCreate64BitAddIn>true</ExcelAddInCreate64BitAddIn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExcelDna.AddIn" Version="1.9.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+</Project>

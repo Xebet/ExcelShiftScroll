@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelShiftScroll", "src\ExcelShiftScroll\ExcelShiftScroll.csproj", "{704F0614-5D04-4725-A3D5-7F587F88F4B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelShiftScroll.Tests", "tests\ExcelShiftScroll.Tests\ExcelShiftScroll.Tests.csproj", "{E77F274E-7BC2-449B-9856-173B5343A6A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{704F0614-5D04-4725-A3D5-7F587F88F4B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{704F0614-5D04-4725-A3D5-7F587F88F4B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{704F0614-5D04-4725-A3D5-7F587F88F4B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{704F0614-5D04-4725-A3D5-7F587F88F4B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E77F274E-7BC2-449B-9856-173B5343A6A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E77F274E-7BC2-449B-9856-173B5343A6A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E77F274E-7BC2-449B-9856-173B5343A6A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E77F274E-7BC2-449B-9856-173B5343A6A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
