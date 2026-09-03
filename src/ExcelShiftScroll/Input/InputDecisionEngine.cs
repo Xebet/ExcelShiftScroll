@@ -31,16 +31,19 @@ public sealed class InputDecisionEngine
             var detents = _accumulatedDelta / WheelDeltaPerDetent;
             _accumulatedDelta %= WheelDeltaPerDetent;
 
-            // Vertical wheel-up is positive. The default mapping is left, hence
-            // the negative column delta. A partial high-resolution delta is
-            // consumed and retained until it reaches one complete detent.
+            // Vertical wheel-up is positive. Horizontal wheel-left is negative,
+            // so both the exact-column fallback and the native smooth path use
+            // the opposite sign by default. The native value deliberately keeps
+            // partial high-resolution deltas instead of snapping them to 120.
             var columnDelta = -detents * settings.ColumnsPerDetent;
+            var horizontalWheelDelta = -input.WheelDelta;
             if (settings.ReverseDirection)
             {
                 columnDelta = -columnDelta;
+                horizontalWheelDelta = -horizontalWheelDelta;
             }
 
-            return ScrollDecision.Consume(columnDelta);
+            return ScrollDecision.Consume(columnDelta, horizontalWheelDelta);
         }
     }
 }

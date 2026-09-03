@@ -12,6 +12,8 @@ Use GitHub's private vulnerability reporting feature for this repository. Do not
 
 ExcelShiftScroll installs a `WH_MOUSE` hook only on the Excel UI thread that loads the add-in. It is not a desktop-global hook and is removed in `AutoClose`. The callback considers only vertical wheel messages, Shift/Ctrl/Alt/Windows modifier state, foreground-window process identity, the window ancestry under the pointer, and wheel delta. It does not record character keys, pointer coordinates, or wheel history.
 
+Eligible Shift + wheel input is converted into an asynchronous `WM_MOUSEHWHEEL` message addressed only to the verified worksheet window in the same Excel process. It does not inject mouse input into Windows or other applications.
+
 The add-in:
 
 - makes no network connections;

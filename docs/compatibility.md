@@ -8,9 +8,9 @@
 | Windows 10 + Excel 2019/2021/2024 x64 | Designed | Uses .NET Framework 4.8 and long-standing Win32/Excel APIs; manual matrix pending. |
 | 32-bit Excel | Build produced | Packed x86 XLL is built and checksum-tested; loading requires a 32-bit Excel host. |
 | Multiple workbooks / modern SDI Excel windows | Designed | Thread-scoped hook plus per-event foreground/root checks. |
-| Frozen and split panes | Designed | `SmallScroll` acts on the active Excel window; manual behavior validation pending. |
+| Frozen and split panes | Designed | Native horizontal-wheel input is posted to the hit pane; the `SmallScroll` fallback acts on the active Excel window. Manual behavior validation pending. |
 | Mixed-DPI multi-monitor setups | Designed | No custom coordinate scaling; class hit testing uses the Win32 screen point. Manual matrix pending. |
-| Precision wheels and touchpads | Partial | Fractional vertical-wheel deltas accumulate. Native horizontal-wheel messages pass through. Device-specific testing pending. |
+| Precision wheels and touchpads | Designed | Fractional vertical-wheel deltas are preserved and converted immediately; native horizontal-wheel messages still pass through unchanged. Device-specific testing pending. |
 | Excel for web, macOS, mobile | Unsupported | Requires Win32 and Excel-DNA. |
 
 ## Fail-closed worksheet detection
@@ -21,6 +21,7 @@ The pointer must resolve into an `EXCEL7` ancestor in the active Excel foregroun
 
 - Normal wheel, Ctrl + wheel, Ctrl + Shift + wheel, Alt/Win combinations, and native horizontal input are passed to the remaining hook chain.
 - The hook is scoped to the Excel UI thread and calls `CallNextHookEx` for every event it does not intentionally consume.
+- Eligible vertical input is posted back to the hit worksheet as `WM_MOUSEHWHEEL`, allowing supported Excel versions to use their native smooth-scrolling renderer. No system-global input is synthesized.
 - Other applications and other Excel processes are not hooked.
 - There is no resident helper process or driver.
 

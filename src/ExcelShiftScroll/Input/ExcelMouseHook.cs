@@ -11,6 +11,7 @@ internal sealed class ExcelMouseHook : IDisposable
     private readonly InputDecisionEngine _decisionEngine;
     private readonly SettingsManager _settings;
     private readonly IWorksheetRegionDetector _regionDetector;
+    private readonly NativeHorizontalWheelDispatcher _nativeDispatcher;
     private readonly ScrollDispatcher _dispatcher;
     private readonly NativeMethods.HookProc _callback;
     private readonly HookLifetime _lifetime;
@@ -19,11 +20,13 @@ internal sealed class ExcelMouseHook : IDisposable
         InputDecisionEngine decisionEngine,
         SettingsManager settings,
         IWorksheetRegionDetector regionDetector,
+        NativeHorizontalWheelDispatcher nativeDispatcher,
         ScrollDispatcher dispatcher)
     {
         _decisionEngine = decisionEngine ?? throw new ArgumentNullException(nameof(decisionEngine));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _regionDetector = regionDetector ?? throw new ArgumentNullException(nameof(regionDetector));
+        _nativeDispatcher = nativeDispatcher ?? throw new ArgumentNullException(nameof(nativeDispatcher));
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _callback = HookCallback; // Strong reference prevents delegate collection.
         _lifetime = new HookLifetime(InstallNativeHook, NativeMethods.UnhookWindowsHookEx);
@@ -65,13 +68,27 @@ internal sealed class ExcelMouseHook : IDisposable
                 isExcelForeground: _regionDetector.IsCurrentExcelForeground(),
                 isWorksheetArea: _regionDetector.IsWorksheetArea(data.WindowHandle, data.Point));
 
-            var decision = _decisionEngine.Decide(snapshot, _settings.Current);
+            var settings = _settings.Current;
+            var decision = _decisionEngine.Decide(snapshot, settings);
             if (!decision.Handled)
             {
                 return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
             }
 
-            if (decision.ColumnDelta != 0 && !_dispatcher.Enqueue(decision.ColumnDelta))
+            var targetWindow = NativeMethods.WindowFromPoint(data.Point);
+            if (targetWindow == IntPtr.Zero)
+            {
+                targetWindow = data.WindowHandle;
+            }
+
+            var nativePosted = _nativeDispatcher.TryPost(
+                targetWindow,
+                data.Point,
+                decision.HorizontalWheelDelta,
+                settings.ColumnsPerDetent);
+            if (!nativePosted &&
+                decision.ColumnDelta != 0 &&
+                !_dispatcher.Enqueue(decision.ColumnDelta))
             {
                 return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
             }

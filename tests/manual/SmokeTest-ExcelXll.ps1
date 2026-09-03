@@ -4,7 +4,7 @@ param(
     [string]$XllPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$ExpectedVersion = '0.1.1'
+    [string]$ExpectedVersion = '0.2.0'
 )
 
 $ErrorActionPreference = 'Stop'

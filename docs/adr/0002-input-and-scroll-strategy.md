@@ -1,6 +1,6 @@
 # ADR 0002: Thread-scoped mouse hook plus queued COM scrolling
 
-- Status: Accepted
+- Status: Superseded by ADR 0003 for output dispatch; input-hook decision remains accepted
 - Date: 2026-09-03
 
 ## Technical spike

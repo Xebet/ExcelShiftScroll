@@ -57,6 +57,7 @@ internal static class AppServices
                 new InputDecisionEngine(),
                 settings,
                 new WorksheetRegionDetector(),
+                new NativeHorizontalWheelDispatcher(),
                 dispatcher);
 
             try

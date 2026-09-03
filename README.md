@@ -7,7 +7,7 @@ ExcelShiftScroll adds the Windows-standard **Shift + mouse wheel** gesture to de
 
 - Shift + wheel up scrolls left.
 - Shift + wheel down scrolls right.
-- It is enabled by default and scrolls three columns per wheel detent.
+- It is enabled by default, uses Excel's native smooth-scrolling path, and defaults to a three-column-equivalent distance per wheel detent.
 
 [简体中文](README.zh-CN.md)
 
@@ -50,7 +50,7 @@ No administrator rights or separate .NET runtime installation is required. The r
 Open Excel's **Add-ins** Ribbon tab and use the **Shift Scroll** group:
 
 - enable or pause conversion immediately;
-- choose 1, 2, 3, 5, or 10 columns per detent;
+- choose a 1, 2, 3, 5, or 10-column-equivalent distance per detent;
 - reverse direction;
 - restore defaults;
 - show version and runtime status.
@@ -71,6 +71,7 @@ Settings are per-user at `%LocalAppData%\ExcelShiftScroll\settings.json`; they a
 - **A stale `%TEMP%` entry remains**: try checking the missing entry once; if Excel offers to delete it from the list, choose **Yes**, then browse to the stable installed copy.
 - **Ribbon group missing**: check **File → Options → Add-ins → Disabled Items**. Ribbon callback failures can cause Office to disable a COM helper.
 - **No horizontal scroll**: ensure the pointer is over the worksheet grid, only Shift is pressed, the add-in is enabled, and the sheet has horizontally scrollable columns.
+- **Scrolling is not smooth**: ExcelShiftScroll normally forwards precision-preserving horizontal wheel deltas to Excel's native scrolling engine. Windows' "one screen at a time" mouse-wheel setting or an older Excel build without improved scrolling uses the exact-column compatibility fallback and may still step by columns.
 - **No action over formula bar/Ribbon/dialog/task pane** is intentional.
 - **Corporate policy blocks XLL files**: ask the administrator to approve the verified file or deploy a signed build. This project does not bypass policy.
 - **Need diagnostics**: edit `diagnosticsEnabled` to `true` in the settings file while Excel is closed. Logs contain only timestamps, fixed event names, and exception types. Re-disable it after diagnosis.
@@ -85,7 +86,7 @@ Requirements: Windows, .NET 8 SDK (used as the build SDK), and PowerShell. The a
 dotnet restore ExcelShiftScroll.sln --configfile NuGet.Config
 dotnet build ExcelShiftScroll.sln --configuration Release --no-restore
 dotnet test ExcelShiftScroll.sln --configuration Release --no-build --no-restore
-./build/Package-Release.ps1 -Version 0.1.1
+./build/Package-Release.ps1 -Version 0.2.0
 ```
 
 Packed XLLs are produced under `src/ExcelShiftScroll/bin/Release/net48/publish`. Release ZIPs and hashes are produced under `artifacts/release`. CI repeats these steps on a Windows runner and publishes tag builds matching `v*`.

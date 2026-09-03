@@ -13,6 +13,7 @@ public sealed class InputDecisionEngineTests
 
         Assert.True(result.Handled);
         Assert.Equal(-3, result.ColumnDelta);
+        Assert.Equal(-120, result.HorizontalWheelDelta);
     }
 
     [Fact]
@@ -22,6 +23,7 @@ public sealed class InputDecisionEngineTests
 
         Assert.True(result.Handled);
         Assert.Equal(3, result.ColumnDelta);
+        Assert.Equal(120, result.HorizontalWheelDelta);
     }
 
     [Theory]
@@ -35,6 +37,7 @@ public sealed class InputDecisionEngineTests
         var result = Decide(wheelDelta, settings);
 
         Assert.Equal(expectedColumns, result.ColumnDelta);
+        Assert.Equal(wheelDelta, result.HorizontalWheelDelta);
     }
 
     [Fact]
@@ -104,7 +107,9 @@ public sealed class InputDecisionEngineTests
 
         Assert.True(first.Handled);
         Assert.Equal(0, first.ColumnDelta);
+        Assert.Equal(-60, first.HorizontalWheelDelta);
         Assert.Equal(-3, second.ColumnDelta);
+        Assert.Equal(-60, second.HorizontalWheelDelta);
     }
 
     [Fact]

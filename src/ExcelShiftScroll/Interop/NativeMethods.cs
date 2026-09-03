@@ -10,6 +10,8 @@ internal static class NativeMethods
     internal const int WmMouseWheel = 0x020A;
     internal const int WmMouseHWheel = 0x020E;
     internal const uint GaRoot = 2;
+    internal const uint SpiGetWheelScrollChars = 0x006C;
+    internal const uint WheelPageScroll = uint.MaxValue;
 
     internal const int VkShift = 0x10;
     internal const int VkControl = 0x11;
@@ -83,4 +85,20 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     internal static extern IntPtr GetParent(IntPtr window);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool PostMessage(
+        IntPtr window,
+        uint message,
+        IntPtr wParam,
+        IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SystemParametersInfo(
+        uint action,
+        uint parameter,
+        out uint value,
+        uint update);
 }

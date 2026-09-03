@@ -16,5 +16,6 @@ TestResults/
 *.bak
 .DS_Store
 .dotnet-home/
+.dotnet-sdk/
 .nuget/
 .appdata/

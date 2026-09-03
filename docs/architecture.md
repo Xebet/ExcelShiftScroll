@@ -9,11 +9,13 @@ flowchart LR
     A[Excel UI thread WH_MOUSE hook] --> B[Win32 snapshot]
     B --> C{Pure input policy}
     C -->|pass through| D[CallNextHookEx]
-    C -->|consume| E[Atomic scroll accumulator]
-    E --> F[Excel-DNA QueueAsMacro]
-    F --> G[ActiveWindow.SmallScroll]
-    H[settings.json] --> C
-    I[Ribbon controls] --> H
+    C -->|consume| E[Native delta scaling]
+    E --> F[Post WM_MOUSEHWHEEL]
+    F --> G[Excel native smooth scrolling]
+    E -->|unsupported or failed| H[Atomic column accumulator]
+    H --> I[QueueAsMacro + SmallScroll]
+    J[settings.json] --> C
+    K[Ribbon controls] --> J
 ```
 
 ## Components
@@ -21,9 +23,9 @@ flowchart LR
 - `Interop/NativeMethods` is the only P/Invoke boundary. It contains no policy.
 - `Input/ExcelMouseHook` installs `WH_MOUSE` against the current Excel UI thread. The delegate is strongly referenced for the full hook lifetime. Callback exceptions pass the event through.
 - `Input/WorksheetRegionDetector` requires the foreground and hit-tested windows to belong to the current process, share the same foreground root, and contain an `EXCEL7` ancestor. Unknown classes fail closed.
-- `Input/InputDecisionEngine` is independent of Win32 and Excel COM. It accepts immutable snapshots, requires Shift alone, accumulates high-resolution deltas, and returns a signed column count.
-- `Excel/ScrollDispatcher` coalesces fast events and submits at most one outstanding macro. Disposal drops pending work.
-- `Excel/ExcelWindowScroller` runs only from a queued Excel macro and calls `ActiveWindow.SmallScroll(Down, Up, ToRight, ToLeft)`. It does not retain COM objects or call `ReleaseComObject`, matching Excel-DNA guidance for main-thread COM access.
+- `Input/InputDecisionEngine` is independent of Win32 and Excel COM. It accepts immutable snapshots, requires Shift alone, preserves every raw high-resolution delta for the smooth path, and also accumulates exact columns for fallback.
+- `Excel/NativeHorizontalWheelDispatcher` scales the configured distance against Windows' horizontal-wheel character setting and asynchronously posts `WM_MOUSEHWHEEL` back to the worksheet target. Excel then owns pixel movement, animation, and pane behavior.
+- `Excel/ScrollDispatcher` and `ExcelWindowScroller` remain the compatibility fallback. They coalesce fast events, queue at most one Excel macro, and call `ActiveWindow.SmallScroll` only if native dispatch is unavailable.
 - `Settings` stores validated per-user JSON. Corrupt or unreadable data returns defaults.
 - `Ribbon` exposes enabled state, column count, reversal, reset, and About status.
 - `Diagnostics` writes privacy-limited JSON lines only when explicitly enabled. The hook callback never writes to disk.
@@ -39,13 +41,13 @@ The event is consumed only when all predicates are true:
 5. the pointer hit resolves to the same foreground root;
 6. the hit window ancestry contains the worksheet class.
 
-Partial precision-wheel deltas are consumed and accumulated until 120 units form one detent. Direction is negative columns for wheel-up by default (left), positive for wheel-down (right). The reverse option negates this result.
+Every eligible precision-wheel delta is consumed and converted immediately: wheel-up becomes a negative horizontal delta (left), and wheel-down becomes positive (right). Sub-unit scaling remainders are retained so small deltas are not lost. Separately, deltas accumulate to 120 only for the exact-column COM fallback. The reverse option negates both paths.
 
 ## Lifecycle and failure behavior
 
 `IExcelAddIn.AutoOpen` constructs one service graph and installs one hook. Initialization is idempotent. `AutoClose` unhooks first and disposes pending dispatch. `HookLifetime` makes repeated install/dispose calls safe. An installation failure leaves the add-in loaded but inactive; input remains native and About reports the failure.
 
-Excel-DNA's macro queue waits until Excel is ready and retries when editing prevents macro execution. COM failures, modal states, and shutdown races are caught outside the hook and result in a dropped scroll gesture rather than a hung or crashed Excel process.
+`PostMessage` prevents re-entering Excel inside the hook callback. Native `WM_MOUSEHWHEEL` messages pass through the hook unchanged, so conversion cannot recurse. If Windows reports zero/page horizontal scrolling or posting fails, Excel-DNA's macro queue waits until Excel is ready and performs the prior exact-column fallback. COM failures, modal states, and shutdown races are caught outside the hook and result in a dropped gesture rather than a hung or crashed Excel process.
 
 ## CPU, processes, and DPI
 

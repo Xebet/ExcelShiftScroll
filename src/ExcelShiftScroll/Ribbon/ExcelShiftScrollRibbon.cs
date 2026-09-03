@@ -100,8 +100,9 @@ public sealed class ExcelShiftScrollRibbon : ExcelRibbon
         var settings = AppServices.Settings.Current;
         var message = string.Format(
             CultureInfo.CurrentCulture,
-            "ExcelShiftScroll 0.1.0{0}{0}Status: {1}{0}Enabled: {2}{0}Columns per detent: {3}{0}Reverse direction: {4}{0}{0}No network access, telemetry, or workbook-content collection.",
+            "ExcelShiftScroll {1}{0}{0}Status: {2}{0}Enabled: {3}{0}Columns per detent: {4}{0}Reverse direction: {5}{0}{0}No network access, telemetry, or workbook-content collection.",
             Environment.NewLine,
+            VersionFunction.Version(),
             AppServices.Status,
             settings.Enabled,
             settings.ColumnsPerDetent,

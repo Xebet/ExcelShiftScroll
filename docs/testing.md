@@ -19,13 +19,20 @@ The suite covers:
 - native horizontal-wheel pass-through;
 - disabled setting pass-through;
 - precision-delta accumulation;
+- native horizontal-message direction, signed multi-monitor coordinates, cleared modifier state, distance scaling, retained sub-unit deltas, and COM fallback selection;
 - corrupt settings fallback, validation, and persistence;
 - repeated hook initialization/release and failed installation;
 - queued-scroll coalescing, shutdown dropping, and rejection after disposal.
 
 CI also verifies a warning-free Release build, both packed XLL architectures, installer/uninstaller and instruction inclusion, ZIP contents, and SHA-256 generation.
 
-Evidence snapshots: [0.1.0](test-results-0.1.0.md) and [0.1.1 trust-installation fix](test-results-0.1.1.md).
+The Windows-only integration check opens an isolated temporary workbook, first posts signed `WM_MOUSEHWHEEL` messages to its `EXCEL7` pane, then briefly synthesizes Shift + vertical-wheel input over that pane to exercise the complete hook-to-native-scroll path. It verifies `ScrollColumn` in both directions, restores the pointer, releases Shift in a `finally` block, saves no document, and closes only the Excel process it created:
+
+```powershell
+./tests/manual/Test-NativeHorizontalWheel.ps1 -XllPath ./src/ExcelShiftScroll/bin/Release/net48/publish/ExcelShiftScroll-AddIn64-packed.xll
+```
+
+Evidence snapshots: [0.1.0](test-results-0.1.0.md), [0.1.1 trust-installation fix](test-results-0.1.1.md), and [0.2.0 native smooth scrolling](test-results-0.2.0.md).
 
 ## Development window probe
 
@@ -51,8 +58,10 @@ Record Windows version, Excel exact version and bitness, display configuration, 
 ### Core input behavior
 
 - [ ] Blank workbook: Shift + wheel-up moves left; Shift + wheel-down moves right.
-- [ ] Default movement is three columns per detent.
-- [ ] 1, 2, 3, 5, and 10-column settings behave as labeled.
+- [ ] Default movement is approximately three columns per detent and uses Excel's smooth transition.
+- [ ] 1, 2, 3, 5, and 10-column-equivalent settings change native scroll distance proportionally.
+- [ ] High-resolution deltas smaller than 120 produce incremental pixel movement rather than waiting for a full detent.
+- [ ] Windows page-at-a-time horizontal-wheel configuration uses the exact-column compatibility fallback.
 - [ ] Reverse direction flips both directions.
 - [ ] Pause passes input through; resume restores handling immediately.
 - [ ] Normal wheel remains vertical.

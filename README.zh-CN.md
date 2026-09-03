@@ -4,7 +4,7 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 
 - Shift + 滚轮向上：向左横向滚动。
 - Shift + 滚轮向下：向右横向滚动。
-- 默认启用，每个滚轮刻度滚动 3 列。
+- 默认启用，使用 Excel 自身的平滑滚动通道，每个滚轮刻度默认为约 3 列的距离。
 
 [English](README.md)
 
@@ -40,14 +40,14 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 
 手动方法：解压到稳定本地目录，右键 XLL → **属性 → 常规 → 解除锁定 → 确定**，然后在 Excel 中浏览这份文件。发布包内的 `INSTALL.txt` 有完整步骤。[Microsoft 官方说明当前 Excel 默认阻止来自不受信任位置的 XLL](https://support.microsoft.com/en-US/Excel/excel-is-blocking-untrusted-xll-add-ins-by-default)。
 
-无需管理员权限，也无需另装 .NET 运行库。0.1.0 发布文件未做 Authenticode 代码签名，Windows SmartScreen 或 Office 可能提示未知发布者。不要关闭系统安全功能；只从本仓库 Release 获取文件，校验 SHA-256 后仅解除该文件的锁定。
+无需管理员权限，也无需另装 .NET 运行库。发布文件未做 Authenticode 代码签名，Windows SmartScreen 或 Office 可能提示未知发布者。不要关闭系统安全功能；只从本仓库 Release 获取文件，校验 SHA-256 后仅解除该文件的锁定。
 
 ## 功能入口
 
 在 Excel 功能区的 **加载项** 选项卡中找到 **Shift Scroll**：
 
 - 立即启用或暂停；
-- 每刻度选择滚动 1、2、3、5 或 10 列；
+- 每刻度选择约 1、2、3、5 或 10 列的滚动距离；
 - 反转方向；
 - 恢复默认值；
 - 查看版本和运行状态。
@@ -68,6 +68,7 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 - **列表仍有 `%TEMP%` 旧条目**：先尝试勾选这个已失效条目；Excel 若询问是否从列表删除，请选择“是”，然后浏览稳定目录中的新文件。
 - **找不到功能区按钮**：检查 **文件 → 选项 → 加载项 → 禁用项目**。
 - **没有横向滚动**：确认鼠标在工作表网格、只按下 Shift、加载项已启用，且工作表可以横向滚动。
+- **仍然没有平滑过渡**：正常情况下，ExcelShiftScroll 会保留高精度滚轮增量并交给 Excel 自身的横向滚动引擎。若 Windows 鼠标设置为“一次滚动一个屏幕”，或 Excel 版本本身不支持改进的平滑滚动，加载项会使用兼容性的整列回退路径，视觉上仍可能逐列跳动。
 - **公式栏/功能区/对话框/任务窗格不触发**：这是安全边界的预期行为。
 - **企业策略禁用 XLL**：请管理员批准已校验文件或部署签名版本。本项目不绕过策略。
 - **需要诊断**：退出 Excel 后把设置中的 `diagnosticsEnabled` 改为 `true`。日志只含时间、固定事件名和异常类型，排查后请关闭。
@@ -80,7 +81,7 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 dotnet restore ExcelShiftScroll.sln --configfile NuGet.Config
 dotnet build ExcelShiftScroll.sln --configuration Release --no-restore
 dotnet test ExcelShiftScroll.sln --configuration Release --no-build --no-restore
-./build/Package-Release.ps1 -Version 0.1.1
+./build/Package-Release.ps1 -Version 0.2.0
 ```
 
 打包后的 XLL 位于 `src/ExcelShiftScroll/bin/Release/net48/publish`，发布 ZIP 和校验值位于 `artifacts/release`。详细设计和验证方式见 [架构](docs/architecture.md)、[测试](docs/testing.md) 和 [ADR](docs/adr/)。

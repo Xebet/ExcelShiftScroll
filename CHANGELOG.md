@@ -2,6 +2,18 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. This project uses semantic versioning.
 
+## [0.2.0] - 2026-09-03
+
+### Changed
+
+- Shift + wheel now uses Excel's native `WM_MOUSEHWHEEL` path so supported Excel builds provide their normal smooth, pixel-level transition.
+- High-resolution wheel and touchpad deltas are forwarded without waiting for a complete 120-unit detent.
+- Scroll-distance choices are scaled against the Windows horizontal-wheel setting; exact-column `SmallScroll` remains as a safe compatibility fallback.
+
+### Fixed
+
+- The About dialog now reads the assembly version instead of displaying a stale hard-coded version.
+
 ## [0.1.1] - 2026-09-03
 
 ### Fixed
