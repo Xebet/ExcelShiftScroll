@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">ExcelShiftScroll demo placeholder</title>
+  <desc id="desc">A placeholder for a future demonstration GIF.</desc>
+  <rect width="960" height="420" rx="20" fill="#f3f6f4"/>
+  <rect x="42" y="42" width="876" height="336" rx="12" fill="#ffffff" stroke="#167d4a" stroke-width="4"/>
+  <rect x="42" y="42" width="876" height="64" rx="10" fill="#167d4a"/>
+  <text x="78" y="84" fill="#ffffff" font-family="Segoe UI, sans-serif" font-size="27" font-weight="600">ExcelShiftScroll</text>
+  <g stroke="#c8d5cd" stroke-width="2">
+    <path d="M78 146H882M78 198H882M78 250H882M78 302H882"/>
+    <path d="M180 126V324M300 126V324M420 126V324M540 126V324M660 126V324M780 126V324"/>
+  </g>
+  <rect x="396" y="178" width="168" height="92" rx="12" fill="#e6f3eb" stroke="#167d4a" stroke-width="3"/>
+  <text x="480" y="215" text-anchor="middle" fill="#124c31" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600">Shift + Wheel</text>
+  <text x="480" y="248" text-anchor="middle" fill="#167d4a" font-family="Segoe UI Symbol, Segoe UI, sans-serif" font-size="30">←  →</text>
+  <text x="480" y="358" text-anchor="middle" fill="#52665a" font-family="Segoe UI, sans-serif" font-size="18">Demo GIF placeholder</text>
+</svg>
