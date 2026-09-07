@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
@@ -14,11 +14,19 @@ $expectedFiles = @(
     (Join-Path $installDirectory 'ExcelShiftScroll32.xll')
 )
 
-foreach ($file in $expectedFiles) {
-    if (Test-Path -LiteralPath $file -PathType Leaf) {
-        Remove-Item -LiteralPath $file -Force
-        Write-Output "Removed: $file"
+$installLock = $null
+try {
+    if (Test-Path -LiteralPath $installDirectory -PathType Container) {
+        $installLock = [IO.File]::Open((Join-Path $installDirectory '.install.lock'), 'OpenOrCreate', 'ReadWrite', 'None')
+        foreach ($file in $expectedFiles) {
+            if (Test-Path -LiteralPath $file -PathType Leaf) {
+                Remove-Item -LiteralPath $file -Force
+                Write-Output "Removed: $file"
+            }
+        }
     }
+} finally {
+    if ($null -ne $installLock) { $installLock.Dispose() }
 }
 
 Write-Output 'Settings were preserved under %LocalAppData%\ExcelShiftScroll\settings.json.'

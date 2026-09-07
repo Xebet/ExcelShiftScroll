@@ -32,7 +32,7 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 
 1. 退出所有 Excel 进程。不要从 ZIP 内部或 `%TEMP%` 临时目录加载 XLL。
 2. 右键下载的 ZIP → **属性**；如有 **解除锁定/Unblock**，勾选后确定，然后再解压。
-3. 在解压目录中右键 `Install-CurrentUser.ps1`，选择 **使用 PowerShell 运行**。它只会把包含的 XLL 复制到 `%LocalAppData%\ExcelShiftScroll\AddIn` 并解除这一份文件的 Internet 标记；不会修改注册表、信任中心或 Excel 加载项列表。
+3. 在解压目录中右键 `Install-CurrentUser.ps1`，选择 **使用 PowerShell 运行**。它会先校验 XLL 的 SHA-256，在暂存文件上解除 Internet 标记，再安装到 `%LocalAppData%\ExcelShiftScroll\AddIn`。原有 XLL 会保留为带时间戳的 `.bak`；安装后校验失败会恢复原文件。不会修改注册表、信任中心或 Excel 加载项列表。
 4. 启动 Excel，打开 **文件 → 选项 → 加载项**。
 5. 底部选择 **Excel 加载项**，点击 **转到**，再点击 **浏览**。不要进入 Office 商店的“我的加载项”页面。
 6. 从稳定安装目录选择 `ExcelShiftScroll64.xll`（64 位）或 `ExcelShiftScroll32.xll`（32 位）。
@@ -42,6 +42,12 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 
 无需管理员权限，也无需另装 .NET 运行库。发布文件未做 Authenticode 代码签名，Windows SmartScreen 或 Office 可能提示未知发布者。不要关闭系统安全功能；只从本仓库 Release 获取文件，校验 SHA-256 后仅解除该文件的锁定。
 
+### 升级与恢复旧版本
+
+关闭 Excel 后运行新包的安装脚本。若此前已从稳定安装路径加载，重开 Excel 即可；否则先取消勾选旧 XLL，再浏览稳定目录中的新 XLL。“About / 关于”会显示实际加载路径与版本，不能仅凭文件夹名称判断版本。一个“Excel 加载项”条目加一个同名“COM 加载项”功能区辅助条目可能是正常现象，不要仅因同名就删除辅助组件。
+
+如需恢复备份：关闭 Excel，另行保留当前 XLL，把安装目录中选定的带时间戳 `.bak` 复制回原来的 `ExcelShiftScroll64.xll` 或 `ExcelShiftScroll32.xll` 名称，再启动 Excel。设置保留；备份不会自动清理。SHA-256 只能校验完整性，不能代替发布者签名。本项目仍完全离线，不添加在线更新功能。
+
 ## 功能入口
 
 在 Excel 功能区的 **加载项** 选项卡中找到 **Shift Scroll**：
@@ -50,16 +56,19 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 - 每刻度选择约 1、2、3、5 或 10 列的滚动距离；
 - 反转方向；
 - 恢复默认值；
-- 查看版本和运行状态。
+- 查看版本、运行状态、Excel 位数和实际加载的 XLL 路径；
+- 打开当前加载项所在目录。
 
 设置保存在 `%LocalAppData%\ExcelShiftScroll\settings.json`，不会写入工作簿。
+
+配置缺失字段会使用默认值，明确保存的 `false` 不会被覆盖。保存失败时保留原设置并显示提示。多个 Excel 进程保存时会互斥写入，以最后一次成功保存的整份设置为准；已打开的进程不会实时同步其他进程的设置。
 
 ## 卸载
 
 1. 打开 **文件 → 选项 → 加载项**。
 2. 选择 **Excel 加载项 → 转到**，取消勾选 ExcelShiftScroll。
 3. 退出所有 Excel 进程。加载项关闭时会解除进程内钩子，不会留下后台进程。
-4. 删除解压目录；如需清除设置和可选诊断日志，再删除 `%LocalAppData%\ExcelShiftScroll`。
+4. 运行发布包内的 `Uninstall-CurrentUser.ps1` 删除已安装的 XLL，设置与备份会保留。旧的手动解压副本需另外删除；如需清除设置、备份和可选诊断日志，再删除 `%LocalAppData%\ExcelShiftScroll`。
 
 ## 常见问题
 
@@ -68,7 +77,7 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 - **列表仍有 `%TEMP%` 旧条目**：先尝试勾选这个已失效条目；Excel 若询问是否从列表删除，请选择“是”，然后浏览稳定目录中的新文件。
 - **找不到功能区按钮**：检查 **文件 → 选项 → 加载项 → 禁用项目**。
 - **没有横向滚动**：确认鼠标在工作表网格、只按下 Shift、加载项已启用，且工作表可以横向滚动。
-- **仍然没有平滑过渡**：正常情况下，ExcelShiftScroll 会保留高精度滚轮增量并交给 Excel 自身的横向滚动引擎。若 Windows 鼠标设置为“一次滚动一个屏幕”，或 Excel 版本本身不支持改进的平滑滚动，加载项会使用兼容性的整列回退路径，视觉上仍可能逐列跳动。
+- **仍然没有平滑过渡**：正常情况下，ExcelShiftScroll 会保留高精度滚轮增量并交给 Excel 自身的横向滚动引擎。Windows 横向滚轮配置为零/整屏或发送原生消息失败时，才使用整列回退路径。旧版 Excel 即使收到原生消息也可能没有平滑动画；加载项不会检测动画支持情况，也没有自行实现缓动。
 - **公式栏/功能区/对话框/任务窗格不触发**：这是安全边界的预期行为。
 - **企业策略禁用 XLL**：请管理员批准已校验文件或部署签名版本。本项目不绕过策略。
 - **需要诊断**：退出 Excel 后把设置中的 `diagnosticsEnabled` 改为 `true`。日志只含时间、固定事件名和异常类型，排查后请关闭。
@@ -81,7 +90,8 @@ ExcelShiftScroll 为 Windows 桌面版 Microsoft Excel 增加常见的 **Shift +
 dotnet restore ExcelShiftScroll.sln --configfile NuGet.Config
 dotnet build ExcelShiftScroll.sln --configuration Release --no-restore
 dotnet test ExcelShiftScroll.sln --configuration Release --no-build --no-restore
-./build/Package-Release.ps1 -Version 0.2.0
+./tests/install/Test-Installer.ps1
+./build/Package-Release.ps1 -Version 0.2.1
 ```
 
 打包后的 XLL 位于 `src/ExcelShiftScroll/bin/Release/net48/publish`，发布 ZIP 和校验值位于 `artifacts/release`。详细设计和验证方式见 [架构](docs/architecture.md)、[测试](docs/testing.md) 和 [ADR](docs/adr/)。

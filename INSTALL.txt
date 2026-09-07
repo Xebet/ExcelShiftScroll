@@ -1,6 +1,17 @@
 ExcelShiftScroll installation / 安装说明
 ========================================
 
+v0.2.1: Offline maintenance release / 离线修复版，无在线更新功能。
+The installer requires SHA256SUMS.txt beside the XLL, verifies before replacing,
+keeps a timestamped .bak of the previous XLL, and rolls back on verification failure.
+安装时必须保留包内 SHA256SUMS.txt；先校验再替换，旧 XLL 保留为带时间戳的
+.bak，安装后校验失败会回滚。请勿在安装期间启动 Excel。
+To restore a backup: close Excel, keep the current XLL separately, copy a selected
+.bak back to the original XLL name, then reopen Excel. Backups are retained.
+恢复备份：关闭 Excel，另行保存当前 XLL，把选定 .bak 复制回原 XLL 名称再重开。
+About shows the actual loaded XLL path, version and Excel bitness; folder names
+alone do not identify the binary version. / 关于页面显示真实加载路径、版本和位数。
+
 IMPORTANT / 重要：
 Microsoft 365 blocks XLL add-ins carrying Mark-of-the-Web or loaded from an
 untrusted/temporary location. Do not run the XLL from inside a ZIP or a Temp

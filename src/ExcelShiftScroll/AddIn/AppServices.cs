@@ -52,7 +52,8 @@ internal static class AppServices
             var dispatcher = new ScrollDispatcher(
                 new ExcelMacroQueue(),
                 new ExcelWindowScroller(),
-                _log);
+                _log,
+                () => settings.Current.Enabled);
             var hook = new ExcelMouseHook(
                 new InputDecisionEngine(),
                 settings,

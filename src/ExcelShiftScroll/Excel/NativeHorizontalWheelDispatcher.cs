@@ -15,6 +15,12 @@ internal sealed class NativeHorizontalWheelDispatcher
     private long _scaleRemainder;
     private int _lastRequestedColumns;
     private uint _lastNativeColumns;
+    private IntPtr _lastTarget;
+
+    internal void Reset()
+    {
+        lock (_gate) { _scaleRemainder = 0; }
+    }
 
     internal NativeHorizontalWheelDispatcher()
         : this(GetNativeColumnsPerDetent, NativeMethods.PostMessage)
@@ -38,6 +44,7 @@ internal sealed class NativeHorizontalWheelDispatcher
     {
         if (targetWindow == IntPtr.Zero || horizontalWheelDelta == 0)
         {
+            Reset();
             return false;
         }
 
@@ -47,7 +54,14 @@ internal sealed class NativeHorizontalWheelDispatcher
             nativeColumns.Value == NativeMethods.WheelPageScroll ||
             requestedColumnsPerDetent <= 0)
         {
+            Reset();
             return false;
+        }
+
+        if (_lastTarget != targetWindow)
+        {
+            Reset();
+            _lastTarget = targetWindow;
         }
 
         var scaledDelta = ScaleDelta(
@@ -84,6 +98,7 @@ internal sealed class NativeHorizontalWheelDispatcher
                     wheelParameter,
                     pointParameter))
             {
+                Reset();
                 return postedAny;
             }
 

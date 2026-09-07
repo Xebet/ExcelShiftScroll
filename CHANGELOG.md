@@ -2,6 +2,24 @@
 
 All notable changes follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. This project uses semantic versioning.
 
+## [0.2.1] - 2026-09-07
+
+### Fixed
+
+- Only process `HC_ACTION` wheel notifications; never replay `HC_NOREMOVE` peeks.
+- Bind queued COM fallback to its original Excel root window; drop expired (>500 ms), paused, cancelled, or mismatched-window work.
+- Reset fractional input on target/settings changes and native delivery to avoid cross-path double counting.
+- Restore defaults for missing JSON fields without overriding explicit disabled settings.
+- Save settings transactionally with a per-path named mutex and unique temporary files; preserve current settings and show a Ribbon warning on save failure.
+- Verify installer checksums before replacing files; serialize installation, retain previous-XLL backups and roll back failed post-install verification.
+
+### Added
+
+- Actual XLL load path and Excel bitness in About, plus an Open add-in folder control.
+- Regression tests for hook notification filtering, deferred scrolling, settings failures/concurrency and installer transactions.
+
+The add-in remains entirely offline: no updater, telemetry, or remote code.
+
 ## [0.2.0] - 2026-09-03
 
 ### Changed

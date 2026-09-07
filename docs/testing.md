@@ -1,5 +1,8 @@
 # Testing
 
+The latest maintenance verification is recorded in [v0.2.1 results](test-results-0.2.1.md).
+Run `tests/install/Test-Installer.ps1` under both PowerShell 7 and Windows PowerShell 5.1, and `tests/settings/Test-ConcurrentSettings.ps1` after a Release build. These tests use isolated temporary folders, not the current user's installed add-in or settings. The native Excel integration probe requires PowerShell 7 and an interactive desktop that permits foreground focus.
+
 ## Automated tests
 
 Run on Windows:

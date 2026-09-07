@@ -38,8 +38,9 @@ public sealed class SettingsManager
         {
             var next = _current.Copy();
             update(next);
-            _current = next.ValidatedCopy();
-            _store.Save(_current);
+            next = next.ValidatedCopy();
+            _store.Save(next);
+            _current = next;
         }
 
         Changed?.Invoke(this, EventArgs.Empty);

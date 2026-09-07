@@ -8,6 +8,11 @@ public sealed class InputDecisionEngine
     private readonly object _gate = new();
     private int _accumulatedDelta;
 
+    public void Reset()
+    {
+        lock (_gate) { _accumulatedDelta = 0; }
+    }
+
     public ScrollDecision Decide(InputSnapshot input, ScrollSettings settings)
     {
         if (!settings.Enabled ||

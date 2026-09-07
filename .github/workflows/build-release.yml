@@ -38,7 +38,7 @@ jobs:
       - name: Select package version
         shell: pwsh
         run: |
-          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.2.0' }
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.2.1' }
           "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build Release
@@ -50,6 +50,18 @@ jobs:
       - name: Package x64 and x86 releases
         shell: pwsh
         run: ./build/Package-Release.ps1 -Version '${{ env.RELEASE_VERSION }}'
+
+      - name: Test cross-process settings saves
+        shell: pwsh
+        run: ./tests/settings/Test-ConcurrentSettings.ps1
+
+      - name: Test installer transactions
+        shell: pwsh
+        run: ./tests/install/Test-Installer.ps1
+
+      - name: Test installer on Windows PowerShell 5.1
+        shell: powershell
+        run: ./tests/install/Test-Installer.ps1
 
       - name: Verify packaged files and checksums
         shell: pwsh

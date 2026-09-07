@@ -15,6 +15,7 @@ internal sealed class ExcelMouseHook : IDisposable
     private readonly ScrollDispatcher _dispatcher;
     private readonly NativeMethods.HookProc _callback;
     private readonly HookLifetime _lifetime;
+    private IntPtr _lastTarget;
 
     internal ExcelMouseHook(
         InputDecisionEngine decisionEngine,
@@ -30,11 +31,26 @@ internal sealed class ExcelMouseHook : IDisposable
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _callback = HookCallback; // Strong reference prevents delegate collection.
         _lifetime = new HookLifetime(InstallNativeHook, NativeMethods.UnhookWindowsHookEx);
+        _settings.Changed += OnSettingsChanged;
     }
 
     internal void Install() => _lifetime.Install();
 
-    public void Dispose() => _lifetime.Dispose();
+    public void Dispose()
+    {
+        _settings.Changed -= OnSettingsChanged;
+        _lifetime.Dispose();
+    }
+
+    private void OnSettingsChanged(object? sender, EventArgs args)
+    {
+        _decisionEngine.Reset();
+        _nativeDispatcher.Reset();
+        _dispatcher.CancelPending();
+    }
+
+    internal static bool ShouldProcess(int code, IntPtr message) =>
+        code == 0 && message == new IntPtr(NativeMethods.WmMouseWheel);
 
     private IntPtr InstallNativeHook() => NativeMethods.SetWindowsHookEx(
         NativeMethods.WhMouse,
@@ -44,20 +60,14 @@ internal sealed class ExcelMouseHook : IDisposable
 
     private IntPtr HookCallback(int code, IntPtr wParam, IntPtr lParam)
     {
-        if (code < 0)
+        // HC_NOREMOVE is a peek, not a consumed input event. Never replay it.
+        if (!ShouldProcess(code, wParam))
         {
             return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
         }
 
         try
         {
-            var message = unchecked((int)wParam.ToInt64());
-            if (message != NativeMethods.WmMouseWheel)
-            {
-                // Native WM_MOUSEHWHEEL and every unrelated mouse message pass through.
-                return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
-            }
-
             var data = Marshal.PtrToStructure<NativeMethods.MouseHookStructEx>(lParam);
             var delta = unchecked((short)(data.MouseData >> 16));
             var snapshot = new InputSnapshot(
@@ -68,17 +78,22 @@ internal sealed class ExcelMouseHook : IDisposable
                 isExcelForeground: _regionDetector.IsCurrentExcelForeground(),
                 isWorksheetArea: _regionDetector.IsWorksheetArea(data.WindowHandle, data.Point));
 
+            var targetWindow = NativeMethods.WindowFromPoint(data.Point);
+            if (targetWindow == IntPtr.Zero) { targetWindow = data.WindowHandle; }
+            if (_lastTarget != targetWindow)
+            {
+                _decisionEngine.Reset();
+                _dispatcher.CancelPending();
+                _lastTarget = targetWindow;
+            }
+
             var settings = _settings.Current;
             var decision = _decisionEngine.Decide(snapshot, settings);
             if (!decision.Handled)
             {
+                _nativeDispatcher.Reset();
+                _dispatcher.CancelPending();
                 return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
-            }
-
-            var targetWindow = NativeMethods.WindowFromPoint(data.Point);
-            if (targetWindow == IntPtr.Zero)
-            {
-                targetWindow = data.WindowHandle;
             }
 
             var nativePosted = _nativeDispatcher.TryPost(
@@ -86,9 +101,16 @@ internal sealed class ExcelMouseHook : IDisposable
                 data.Point,
                 decision.HorizontalWheelDelta,
                 settings.ColumnsPerDetent);
+            if (nativePosted)
+            {
+                // The native path already owns this delta, including fractions.
+                _decisionEngine.Reset();
+                _dispatcher.CancelPending();
+            }
             if (!nativePosted &&
                 decision.ColumnDelta != 0 &&
-                !_dispatcher.Enqueue(decision.ColumnDelta))
+                !_dispatcher.Enqueue(decision.ColumnDelta,
+                    NativeMethods.GetAncestor(targetWindow, NativeMethods.GaRoot)))
             {
                 return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
             }

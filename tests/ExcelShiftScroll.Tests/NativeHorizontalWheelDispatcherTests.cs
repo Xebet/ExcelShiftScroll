@@ -76,6 +76,29 @@ public sealed class NativeHorizontalWheelDispatcherTests
         Assert.False(dispatcher.TryPost(new IntPtr(1), default, -120, 3));
     }
 
+    [Fact]
+    public void ChangingTargetDiscardsFractionalRemainder()
+    {
+        var messages = new List<PostedMessage>();
+        var dispatcher = Create(3, messages);
+        dispatcher.TryPost(new IntPtr(1), default, -2, 1);
+        dispatcher.TryPost(new IntPtr(2), default, -1, 1);
+        Assert.Empty(messages);
+        dispatcher.TryPost(new IntPtr(2), default, -2, 1);
+        Assert.Equal(new IntPtr(2), Assert.Single(messages).Window);
+    }
+
+    [Fact]
+    public void ResetDiscardsFractionalRemainder()
+    {
+        var messages = new List<PostedMessage>();
+        var dispatcher = Create(3, messages);
+        dispatcher.TryPost(new IntPtr(1), default, -2, 1);
+        dispatcher.Reset();
+        dispatcher.TryPost(new IntPtr(1), default, -1, 1);
+        Assert.Empty(messages);
+    }
+
     private static NativeHorizontalWheelDispatcher Create(
         uint nativeColumns,
         ICollection<PostedMessage> messages) =>

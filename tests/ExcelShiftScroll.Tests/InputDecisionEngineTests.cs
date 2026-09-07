@@ -123,6 +123,17 @@ public sealed class InputDecisionEngineTests
         Assert.Equal(0, engine.Decide(Snapshot(60), settings).ColumnDelta);
     }
 
+    [Fact]
+    public void NativeDeliveryResetPreventsFallbackDoubleCounting()
+    {
+        var engine = new InputDecisionEngine();
+        var settings = ScrollSettings.Defaults();
+        engine.Decide(Snapshot(60), settings);
+        engine.Reset();
+        Assert.Equal(0, engine.Decide(Snapshot(60), settings).ColumnDelta);
+        Assert.Equal(-3, engine.Decide(Snapshot(60), settings).ColumnDelta);
+    }
+
     private static ScrollDecision Decide(
         int wheelDelta,
         ScrollSettings? settings = null,

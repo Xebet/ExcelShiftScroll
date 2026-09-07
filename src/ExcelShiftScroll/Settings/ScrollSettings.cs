@@ -21,6 +21,13 @@ public sealed class ScrollSettings
 
     public static ScrollSettings Defaults() => new();
 
+    [OnDeserializing]
+    private void InitializeDefaults(StreamingContext context)
+    {
+        Enabled = true;
+        ColumnsPerDetent = 3;
+    }
+
     public ScrollSettings ValidatedCopy()
     {
         var columns = System.Array.IndexOf(AllowedColumnCounts, ColumnsPerDetent) >= 0

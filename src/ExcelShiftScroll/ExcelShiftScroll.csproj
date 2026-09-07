@@ -3,7 +3,7 @@
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>ExcelShiftScroll</AssemblyName>
     <RootNamespace>ExcelShiftScroll</RootNamespace>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>Xebet and contributors</Authors>
     <Description>Shift + mouse wheel horizontal scrolling for desktop Excel.</Description>
     <Copyright>Copyright (c) 2026 Xebet and contributors</Copyright>

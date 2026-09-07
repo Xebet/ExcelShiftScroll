@@ -35,7 +35,7 @@ To check Excel bitness: open **File → Account → About Excel**. The first lin
 
 1. Exit every Excel process. Do not load the XLL from inside a ZIP or `%TEMP%`.
 2. Right-click the downloaded ZIP, choose **Properties**, select **Unblock** if shown, and then extract it.
-3. In the extracted folder, right-click `Install-CurrentUser.ps1` and choose **Run with PowerShell**. It copies and unblocks only the included XLL under `%LocalAppData%\ExcelShiftScroll\AddIn`; it does not change the registry, Trust Center, or Excel's add-in list.
+3. In the extracted folder, right-click `Install-CurrentUser.ps1` and choose **Run with PowerShell**. It verifies the included XLL checksum, stages and unblocks the file, then installs under `%LocalAppData%\ExcelShiftScroll\AddIn`. It retains the previous XLL as a timestamped `.bak` and restores it if post-install verification fails. It does not change the registry, Trust Center, or Excel's add-in list.
 4. Start Excel and open **File → Options → Add-ins**.
 5. At the bottom, select **Excel Add-ins**, choose **Go**, then **Browse**. This is not the Office Store **My Add-ins** page.
 6. Select `ExcelShiftScroll64.xll` for 64-bit Excel or `ExcelShiftScroll32.xll` for 32-bit Excel from the stable installed folder.
@@ -45,6 +45,12 @@ Manual alternative: extract to a stable local folder, right-click the XLL itself
 
 No administrator rights or separate .NET runtime installation is required. The release is currently unsigned, so Windows SmartScreen or Office may show a publisher warning. Do not disable security features; use the repository Release page, unblock only the file you verified, and compare its SHA-256.
 
+### Upgrade or restore a previous version
+
+Close Excel and run the new package's installer. If you already load from the stable installed path, reopen Excel; otherwise uncheck the old XLL entry and browse to the installed path once. **About** shows the actual loaded XLL path and version: a directory name is not reliable version evidence. An Excel add-in entry and a COM Ribbon helper with the same name can be normal; do not delete the helper merely because the name is duplicated.
+
+To restore a backup, close Excel, preserve the current XLL separately, copy the desired timestamped `.bak` in the installed folder back to its original `ExcelShiftScroll64.xll` or `ExcelShiftScroll32.xll` name, and reopen Excel. Settings are preserved. Backups are not automatically pruned. SHA-256 detects corruption, not publisher authenticity; binaries remain unsigned. No online update feature is included.
+
 ## Controls
 
 Open Excel's **Add-ins** Ribbon tab and use the **Shift Scroll** group:
@@ -53,16 +59,19 @@ Open Excel's **Add-ins** Ribbon tab and use the **Shift Scroll** group:
 - choose a 1, 2, 3, 5, or 10-column-equivalent distance per detent;
 - reverse direction;
 - restore defaults;
-- show version and runtime status.
+- show version, runtime status, Excel bitness, and the actual loaded XLL path;
+- open the loaded add-in's folder.
 
 Settings are per-user at `%LocalAppData%\ExcelShiftScroll\settings.json`; they are never stored in a workbook.
+
+Missing JSON fields use defaults while explicit `false` values are preserved. Failed saves leave the current settings unchanged and show a warning. Separate Excel processes serialize file writes; the last successful whole-settings save wins, and existing processes do not live-reload one another's settings.
 
 ## Uninstall
 
 1. In Excel, open **File → Options → Add-ins**.
 2. Select **Excel Add-ins**, choose **Go**, and clear ExcelShiftScroll.
 3. Exit every Excel process. The in-process hook is removed during add-in shutdown; there is no background process.
-4. Delete the extracted release folder. Optionally delete `%LocalAppData%\ExcelShiftScroll` to remove settings and opt-in diagnostics.
+4. Run the packaged `Uninstall-CurrentUser.ps1` to remove the installed XLLs. It preserves settings and backups. Delete old extracted copies separately if you no longer need them. Optionally delete `%LocalAppData%\ExcelShiftScroll` to remove settings, backups, and opt-in diagnostics.
 
 ## Troubleshooting
 
@@ -71,7 +80,7 @@ Settings are per-user at `%LocalAppData%\ExcelShiftScroll\settings.json`; they a
 - **A stale `%TEMP%` entry remains**: try checking the missing entry once; if Excel offers to delete it from the list, choose **Yes**, then browse to the stable installed copy.
 - **Ribbon group missing**: check **File → Options → Add-ins → Disabled Items**. Ribbon callback failures can cause Office to disable a COM helper.
 - **No horizontal scroll**: ensure the pointer is over the worksheet grid, only Shift is pressed, the add-in is enabled, and the sheet has horizontally scrollable columns.
-- **Scrolling is not smooth**: ExcelShiftScroll normally forwards precision-preserving horizontal wheel deltas to Excel's native scrolling engine. Windows' "one screen at a time" mouse-wheel setting or an older Excel build without improved scrolling uses the exact-column compatibility fallback and may still step by columns.
+- **Scrolling is not smooth**: ExcelShiftScroll forwards precision-preserving horizontal wheel deltas to Excel's native scrolling engine. Zero/page horizontal-wheel settings or a failed native post use the exact-column fallback. Older Excel builds may render native messages without smooth transitions; the add-in does not detect animation support or implement its own easing.
 - **No action over formula bar/Ribbon/dialog/task pane** is intentional.
 - **Corporate policy blocks XLL files**: ask the administrator to approve the verified file or deploy a signed build. This project does not bypass policy.
 - **Need diagnostics**: edit `diagnosticsEnabled` to `true` in the settings file while Excel is closed. Logs contain only timestamps, fixed event names, and exception types. Re-disable it after diagnosis.
@@ -86,7 +95,8 @@ Requirements: Windows, .NET 8 SDK (used as the build SDK), and PowerShell. The a
 dotnet restore ExcelShiftScroll.sln --configfile NuGet.Config
 dotnet build ExcelShiftScroll.sln --configuration Release --no-restore
 dotnet test ExcelShiftScroll.sln --configuration Release --no-build --no-restore
-./build/Package-Release.ps1 -Version 0.2.0
+./tests/install/Test-Installer.ps1
+./build/Package-Release.ps1 -Version 0.2.1
 ```
 
 Packed XLLs are produced under `src/ExcelShiftScroll/bin/Release/net48/publish`. Release ZIPs and hashes are produced under `artifacts/release`. CI repeats these steps on a Windows runner and publishes tag builds matching `v*`.

@@ -1,8 +1,11 @@
 using System;
 using System.Globalization;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ExcelDna.Integration.CustomUI;
+using ExcelDna.Integration;
 using ExcelShiftScroll.AddIn;
 using ExcelShiftScroll.Settings;
 
@@ -45,6 +48,9 @@ public sealed class ExcelShiftScrollRibbon : ExcelRibbon
           <button id='ExcelShiftScroll.About'
                   label='About'
                   onAction='OnAbout'/>
+          <button id='ExcelShiftScroll.Folder'
+                  label='Open add-in folder'
+                  onAction='OnOpenFolder'/>
         </group>
       </tab>
     </tabs>
@@ -91,8 +97,7 @@ public sealed class ExcelShiftScrollRibbon : ExcelRibbon
 
     public void OnRestoreDefaults(IRibbonControl control)
     {
-        AppServices.Settings.Reset();
-        _ribbonUi?.Invalidate();
+        ApplySettingsChange(() => AppServices.Settings.Reset());
     }
 
     public void OnAbout(IRibbonControl control)
@@ -100,13 +105,15 @@ public sealed class ExcelShiftScrollRibbon : ExcelRibbon
         var settings = AppServices.Settings.Current;
         var message = string.Format(
             CultureInfo.CurrentCulture,
-            "ExcelShiftScroll {1}{0}{0}Status: {2}{0}Enabled: {3}{0}Columns per detent: {4}{0}Reverse direction: {5}{0}{0}No network access, telemetry, or workbook-content collection.",
+            "ExcelShiftScroll {1}{0}{0}Status: {2}{0}Enabled: {3}{0}Columns per detent: {4}{0}Reverse direction: {5}{0}Excel: {6}-bit{0}Loaded XLL: {7}{0}{0}No network access, telemetry, or workbook-content collection.",
             Environment.NewLine,
             VersionFunction.Version(),
             AppServices.Status,
             settings.Enabled,
             settings.ColumnsPerDetent,
-            settings.ReverseDirection);
+            settings.ReverseDirection,
+            Environment.Is64BitProcess ? 64 : 32,
+            ExcelDnaUtil.XllPath);
 
         MessageBox.Show(
             message,
@@ -117,7 +124,31 @@ public sealed class ExcelShiftScrollRibbon : ExcelRibbon
 
     private void Update(Action<ScrollSettings> update)
     {
-        AppServices.Settings.Update(update);
-        _ribbonUi?.Invalidate();
+        ApplySettingsChange(() => AppServices.Settings.Update(update));
+    }
+
+    private void ApplySettingsChange(Action change)
+    {
+        try { change(); }
+        catch (Exception)
+        {
+            MessageBox.Show("Settings could not be saved. Previous settings are unchanged. Check folder permissions and try again.\n设置无法保存，原设置未改变。请检查配置目录权限后重试。",
+                "ExcelShiftScroll", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        finally { _ribbonUi?.Invalidate(); }
+    }
+
+    public void OnOpenFolder(IRibbonControl control)
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(ExcelDnaUtil.XllPath);
+            if (directory is null || !Directory.Exists(directory)) { return; }
+            Process.Start(new ProcessStartInfo("explorer.exe", "\"" + directory + "\"") { UseShellExecute = true });
+        }
+        catch (Exception)
+        {
+            MessageBox.Show("Could not open the folder. See About for the loaded XLL path.", "ExcelShiftScroll");
+        }
     }
 }

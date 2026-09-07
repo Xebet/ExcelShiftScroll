@@ -59,6 +59,9 @@ public static class ExcelShiftScrollNativeTest
     private static extern bool SetForegroundWindow(IntPtr window);
 
     [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
     private static extern void keybd_event(
         byte virtualKey,
         byte scanCode,
@@ -143,7 +146,15 @@ public static class ExcelShiftScrollNativeTest
         previousY = previous.Y;
         var x = rect.Left + ((rect.Right - rect.Left) / 2);
         var y = rect.Top + ((rect.Bottom - rect.Top) / 2);
-        return SetCursorPos(x, y) && SetForegroundWindow(excelRoot);
+        var moved = SetCursorPos(x, y);
+        SetForegroundWindow(excelRoot);
+        // The return code alone is not proof of failure if Excel is already
+        // foreground. Verify actual state before injecting any input.
+        var foreground = GetForegroundWindow();
+        Console.WriteLine("Input preparation: cursorMoved={0}; target={1}; foreground={2}", moved, excelRoot, foreground);
+        var ready = moved && foreground == excelRoot;
+        if (!ready && moved) { SetCursorPos(previousX, previousY); }
+        return ready;
     }
 
     public static void SetShift(bool down)
@@ -177,6 +188,7 @@ $ownsExcelProcess = $false
 $workbooks = $null
 $workbook = $null
 $window = $null
+$testError = $null
 try {
     $excel = New-Object -ComObject Excel.Application
     Start-Sleep -Milliseconds 250
@@ -274,6 +286,7 @@ try {
 
     Write-Output "End-to-end gesture verified: Shift+wheel-up 10->$afterWheelUp; Shift+wheel-down 10->$afterWheelDown"
 }
+catch { $testError = $_ }
 finally {
     if ($ownsExcelProcess -and $null -ne $excel) {
         try {
@@ -321,3 +334,4 @@ if ($remainingNewProcesses.Count -ne 0) {
 }
 
 Write-Output 'The isolated Excel process exited cleanly; pre-existing Excel processes were not modified or closed.'
+if ($null -ne $testError) { throw $testError }

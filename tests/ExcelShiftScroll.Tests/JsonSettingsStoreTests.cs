@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using ExcelShiftScroll.Settings;
 using Xunit;
 
@@ -7,6 +8,54 @@ namespace ExcelShiftScroll.Tests;
 
 public sealed class JsonSettingsStoreTests
 {
+    [Theory]
+    [InlineData("{}", true, 3)]
+    [InlineData("{\"columnsPerDetent\":5}", true, 5)]
+    [InlineData("{\"enabled\":false}", false, 3)]
+    [InlineData("{\"futureField\":123}", true, 3)]
+    public void MissingFieldsUseDefaultsWithoutOverridingExplicitValues(string json, bool enabled, int columns)
+    {
+        WithTemporarySettingsPath(path =>
+        {
+            File.WriteAllText(path, json);
+            var settings = new JsonSettingsStore(path).Load();
+            Assert.Equal(enabled, settings.Enabled);
+            Assert.Equal(columns, settings.ColumnsPerDetent);
+        });
+    }
+
+    [Fact]
+    public void ConcurrentStoresLeaveValidJsonAndNoTemporaryFiles()
+    {
+        WithTemporarySettingsPath(path =>
+        {
+            Parallel.For(0, 40, i =>
+            {
+                var store = new JsonSettingsStore(path);
+                store.Save(new ScrollSettings { Enabled = false, ColumnsPerDetent = 5 });
+                Assert.False(store.Load().Enabled);
+            });
+            Assert.Equal(5, new JsonSettingsStore(path).Load().ColumnsPerDetent);
+            Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(path)!, "*.tmp"));
+        });
+    }
+
+    [Fact]
+    public void FailedReplacementPreservesPreviousFileAndCleansTemporaryFile()
+    {
+        WithTemporarySettingsPath(path =>
+        {
+            var store = new JsonSettingsStore(path);
+            store.Save(new ScrollSettings { Enabled = false });
+            using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                Assert.Throws<IOException>(() => store.Save(new ScrollSettings { Enabled = true }));
+            }
+            Assert.False(store.Load().Enabled);
+            Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(path)!, "*.tmp"));
+        });
+    }
+
     [Fact]
     public void CorruptedSettingsRecoverToDefaults()
     {
