@@ -12,11 +12,11 @@
 - Three independent Windows PowerShell processes performed 180 settings save/read cycles; JSON remained valid and no temporary files remained.
 - Isolated x64 Excel smoke test: `RegisterXLL=true`, version `0.2.1`, status `Mouse hook active`; test process exited cleanly.
 - Actual Excel native horizontal-wheel messages: `+120` moved ScrollColumn 10 to 13; `-120` moved 10 to 7.
+- Final synthetic Shift+wheel end-to-end probe passed after foreground focus became available: wheel-up moved 10 to 7, wheel-down moved 10 to 13. The isolated Excel process exited cleanly.
 
 ## Not claimed as passed
 
-- This session's synthetic Shift+wheel end-to-end probe could not obtain foreground focus: Windows retained another foreground HWND. It stopped before injecting wheel/key events. Native wheel movement above passed, but does not substitute for the full gesture test.
-- The probe now checks actual foreground HWND and restores the pointer on preparation failure; failed probes also run process-exit verification.
+- Earlier synthetic-input attempts were blocked by Windows foreground-focus restrictions and stopped before wheel/key injection. They were not counted as passes; the final complete retry above passed. The probe now verifies actual foreground HWND, restores the pointer on preparation failure and checks process exit even after a failed probe.
 - Perceived smoothness/animation timing, frozen/split panes, mixed-DPI monitors, older Excel versions and actual 32-bit Excel loading still require hands-on testing. Pure policy and queue tests are not claims of full UI coverage.
 
 ## Release validation
